@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: kmp_users
+    password: kmp_users
+  jpa:
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+
+liquibase:
+  db:
+    changeLog: "classpath:db/changelog-master.yml"
