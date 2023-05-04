@@ -14,7 +14,34 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: jdbc:postgresql://172.18.0.2:5432/kmp_users
+      DATABASE_URL: jdbc:postgresql://db_users:5432/kmp_users
+      POSTGRES_USER: kmp_users
+      POSTGRES_PASSWORD: kmp_users
     depends_on:
       db_users:
         condition: service_started
+
+  db_posts:
+    image: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: kmp_posts
+      POSTGRES_PASSWORD: kmp_posts
+      POSTGRES_DB: kmp_posts
+
+  app_posts:
+    image: epamsesegvanchikova/posts:v1
+    ports:
+      - "8090:8090"
+    environment:
+      DATABASE_URL: jdbc:postgresql://db_posts:5432/kmp_posts
+      POSTGRES_USER: kmp_posts
+      POSTGRES_PASSWORD: kmp_posts
+      USERS_ORIGIN: http://app_users:8080
+    depends_on:
+      db_posts:
+        condition: service_started
+      app_users:
+        condition: service_started
+

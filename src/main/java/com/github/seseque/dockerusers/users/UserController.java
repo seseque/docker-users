@@ -38,7 +38,12 @@ public class UserController {
 
     @PutMapping("/users/{id}")
     UserRes updateUser(@PathVariable Long id, @RequestBody UserReq user) {
-        return userService.updateUser(id, user);
+        return userService.updateUsername(id, user);
+    }
+
+    @PutMapping("/users/{id}/posts")
+    UserRes updateUserPosts(@PathVariable Long id, @RequestBody UserPostsAmountReq user) {
+        return userService.updateUserPostsAmount(id, user);
     }
 
 }

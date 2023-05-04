@@ -23,4 +23,7 @@ public class User {
 
     @Column
     String username;
+
+    @Column(name = "amount_of_posts")
+    Integer amountOfPosts = 0;
 }

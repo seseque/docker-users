@@ -30,9 +30,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserRes updateUser(Long id, UserReq userReq) {
+    public UserRes updateUsername(Long id, UserReq userReq) {
         var entity = repository.findById(id).orElseThrow(RuntimeException::new);
         entity.setUsername(userReq.username);
+        var saved = repository.save(entity);
+        return mapper.toResponse(saved);
+    }
+
+    @Override
+    public UserRes updateUserPostsAmount(Long id, UserPostsAmountReq userReq) {
+        var entity = repository.findById(id).orElseThrow(RuntimeException::new);
+        entity.setAmountOfPosts(entity.amountOfPosts + userReq.amount);
         var saved = repository.save(entity);
         return mapper.toResponse(saved);
     }

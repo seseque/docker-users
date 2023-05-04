@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: ${DATABASE_URL}
-    username: kmp_users
-    password: kmp_users
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/kmp_users}
+    username: ${POSTGRES_USER:kmp_users}
+    password: ${POSTGRES_PASSWORD:kmp_users}
   jpa:
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
