@@ -1,0 +1,311 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kmp
+
+---
+#
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: users-pvc
+#  namespace: kmp
+#spec:
+#  storageClassName: "" # Empty string must be explicitly set otherwise default StorageClass will be set
+#  volumeName: users-pv
+#  accessMode:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: 100Mi
+#
+#---
+## create local volume
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: users-pv
+#  labels:
+#    type: local
+#spec:
+#  capacity:
+#    storage: 5Gi
+#  volumeMode: Filesystem # is mounted into Pods into a directory.
+#  accessModes:
+#    - ReadWriteOnce
+##  persistentVolumeReclaimPolicy: Recycle
+##  storageClassName: slow
+##  mountOptions:
+##    - hard
+##    - nfsvers=4.1
+##  nfs:
+##    path: /tmp
+##    server: 172.17.0.2
+#
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-config
+  namespace: kmp
+data:
+  posts-url: posts-db-service
+  users-url: users-db-service
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: kmp
+type: Opaque
+data:
+  # You can include additional key value pairs as you do with Opaque Secrets
+  extra: YmFyCg==
+  db-users-user: a21wX3VzZXJz
+  db-users-password: a21wX3VzZXJz
+  db-users-name: a21wX3VzZXJz
+  db-posts-user: a21wX3Bvc3Rz
+  db-posts-password: a21wX3Bvc3Rz
+  db-posts-name: a21wX3Bvc3Rz
+
+---
+#posts services
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: posts-db-deployment
+  namespace: kmp
+  labels:
+    app.kubernetes.io/name: posts-db
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: posts-db
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: posts-db
+    spec:
+      containers:
+        - name: posts-db
+          image: postgres
+          ports:
+            - containerPort: 5432
+              name: posts-db
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-posts-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-posts-password
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-posts-name
+#  volumes:
+#    - name: posts-vol
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: posts-db-service
+  namespace: kmp
+spec:
+  selector:
+    app.kubernetes.io/name: posts-db
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: posts-db
+      nodePort: 30433
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: posts-deployment
+  namespace: kmp
+  labels:
+    app.kubernetes.io/name: posts
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: posts
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: posts
+    spec:
+      containers:
+        - name: posts
+          image: epamsesegvanchikova/posts:v2
+          ports:
+            - containerPort: 8080
+              name: http-posts
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-posts-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-posts-password
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: posts-url
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: posts
+  namespace: kmp
+spec:
+  selector:
+    app.kubernetes.io/name: posts
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: http-posts
+      nodePort: 30890
+
+---
+#users services
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-db-deployment
+  namespace: kmp
+  labels:
+    app.kubernetes.io/name: users-db
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: users-db
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: users-db
+    spec:
+      containers:
+        - name: users-db
+          image: postgres
+          ports:
+            - containerPort: 5432
+              name: users-db
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-users-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-users-password
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-users-name
+#  volumes:
+#    - name: posts-vol
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-db-service
+  namespace: kmp
+spec:
+  selector:
+    app.kubernetes.io/name: users-db
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: posts-db
+      nodePort: 30432
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-deployment
+  namespace: kmp
+  labels:
+    app.kubernetes.io/name: users
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: users
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: users
+    spec:
+      containers:
+        - name: posts
+          image: epamsesegvanchikova/users:v2
+          ports:
+            - containerPort: 8080
+              name: http-users
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-users-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: db-users-password
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: users-url
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: users
+  namespace: kmp
+spec:
+  selector:
+    app.kubernetes.io/name: users
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: http-users
+      nodePort: 30880

@@ -1,3 +1,5 @@
-docker build -t epamsesegvanchikova/users:v1 -f ./Dockerfile .
+gradle clean build
 
-docker push epamsesegvanchikova/users:v1
+docker build -t epamsesegvanchikova/users:v2 -f ./Dockerfile .
+
+docker push epamsesegvanchikova/users:v2
