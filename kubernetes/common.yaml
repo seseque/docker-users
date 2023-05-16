@@ -69,9 +69,9 @@ data:
 ---
 #posts services
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: posts-db-deployment
+  name: posts-db-statefulset
   namespace: kmp
   labels:
     app.kubernetes.io/name: posts-db
@@ -80,11 +80,13 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: posts-db
+  serviceName: "posts-db-service"
   template:
     metadata:
       labels:
         app.kubernetes.io/name: posts-db
     spec:
+      terminationGracePeriodSeconds: 10
       containers:
         - name: posts-db
           image: postgres
@@ -110,10 +112,15 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: posts-vol
-      volumes:
-        - name: posts-vol
-          persistentVolumeClaim:
-            claimName: kmp-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: posts-vol
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          claims:
+            - name: kmp-pvc
+        storageClassName: ""
 
 ---
 
@@ -126,7 +133,7 @@ spec:
   clusterIP: None
   selector:
     app.kubernetes.io/name: posts-db
-#  type: NodePort
+  #  type: NodePort
   ports:
     - protocol: TCP
       port: 5432
@@ -194,9 +201,9 @@ spec:
 ---
 #users services
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: users-db-deployment
+  name: users-db-statefulset
   namespace: kmp
   labels:
     app.kubernetes.io/name: users-db
@@ -205,11 +212,13 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: users-db
+  serviceName: "users-db-service"
   template:
     metadata:
       labels:
         app.kubernetes.io/name: users-db
     spec:
+      terminationGracePeriodSeconds: 10
       containers:
         - name: users-db
           image: postgres
@@ -232,8 +241,18 @@ spec:
                 secretKeyRef:
                   name: db-secret
                   key: db-users-name
-#  volumes:
-#    - name: posts-vol
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: users-vol
+  volumeClaimTemplates:
+    - metadata:
+        name: users-vol
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          claims:
+            - name: kmp-pvc
+        storageClassName: ""
 
 ---
 
@@ -246,7 +265,7 @@ spec:
   clusterIP: None
   selector:
     app.kubernetes.io/name: users-db
-#  type: NodePort
+  #  type: NodePort
   ports:
     - protocol: TCP
       port: 5432
