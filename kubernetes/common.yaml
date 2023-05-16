@@ -35,14 +35,7 @@ spec:
     - ReadWriteOnce
   hostPath:
     path: "/mnt/wsl/kube-data"
-#  persistentVolumeReclaimPolicy: Recycle
   storageClassName: ""
-#  mountOptions:
-#    - hard
-#    - nfsvers=4.1
-#  nfs:
-#    path: /tmp
-#    server: 172.17.0.2
 
 ---
 
