@@ -42,6 +42,4 @@ services:
     depends_on:
       db_posts:
         condition: service_started
-      app_users:
-        condition: service_started
 
