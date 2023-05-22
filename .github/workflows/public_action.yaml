@@ -9,4 +9,4 @@ jobs:
           repository: abystoma/external-workflow
           ref: 3eb718710f20d7df6874acdc41e189a2ae4182f5
       - name: Greetings
-        run: ls
+        run: cat $(ls)
