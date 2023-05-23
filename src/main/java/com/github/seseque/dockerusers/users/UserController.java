@@ -1,5 +1,6 @@
 package com.github.seseque.dockerusers.users;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,7 +23,7 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    UserRes createUser(@RequestBody UserReq user) {
+    UserRes createUser(@RequestBody @Valid UserReq user) {
         return userService.createUser(user);
     }
 
@@ -31,24 +32,38 @@ public class UserController {
         try {
             UserRes res = userService.getUser(id);
             return ResponseEntity.ok(res);
-        } catch (RuntimeException e) {
+        } catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
     @DeleteMapping("/users/{id}")
-    void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    ResponseEntity<UserRes> deleteUser(@PathVariable Long id) {
+        try {
+            UserRes res = userService.deleteUser(id);
+            return ResponseEntity.ok(res);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/users/{id}")
-    UserRes updateUser(@PathVariable Long id, @RequestBody UserReq user) {
-        return userService.updateUsername(id, user);
+    ResponseEntity<UserRes> updateUser(@PathVariable Long id, @Valid @RequestBody UserReq user) {
+        try {
+            UserRes res = userService.updateUsername(id, user);
+            return ResponseEntity.ok(res);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/users/{id}/posts")
-    UserRes updateUserPosts(@PathVariable Long id, @RequestBody UserPostsAmountReq user) {
-        return userService.updateUserPostsAmount(id, user);
+    ResponseEntity<UserRes> updateUserPosts(@PathVariable Long id, @RequestBody UserPostsAmountReq user) {
+        try {
+            UserRes res = userService.updateUserPostsAmount(id, user);
+            return ResponseEntity.ok(res);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
-
 }

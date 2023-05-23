@@ -23,6 +23,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-rest")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
+	implementation("org.springframework.boot:spring-boot-starter-validation:3.1.0")
+
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 	implementation ("org.mapstruct:mapstruct:1.5.4.Final")

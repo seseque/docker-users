@@ -5,7 +5,7 @@ public interface UserService {
 
     UserRes getUser(Long id);
 
-    void deleteUser(Long id);
+    UserRes deleteUser(Long id);
 
     UserRes updateUsername(Long id, UserReq user);
     UserRes updateUserPostsAmount(Long id, UserPostsAmountReq user);

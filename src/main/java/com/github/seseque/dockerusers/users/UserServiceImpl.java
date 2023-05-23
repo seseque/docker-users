@@ -19,19 +19,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserRes getUser(Long id) {
-        return mapper.toResponse(repository.findById(id).orElseThrow(
-                RuntimeException::new
-        ));
+        return mapper.toResponse(repository.findById(id).orElseThrow(UserNotFoundException::new));
     }
 
     @Override
-    public void deleteUser(Long id) {
-        repository.deleteById(id);
+    public UserRes deleteUser(Long id) {
+        User saved = repository.findById(id).orElseThrow(UserNotFoundException::new);
+        repository.delete(saved);
+        return mapper.toResponse(saved);
     }
 
     @Override
     public UserRes updateUsername(Long id, UserReq userReq) {
-        var entity = repository.findById(id).orElseThrow(RuntimeException::new);
+        var entity = repository.findById(id).orElseThrow(UserNotFoundException::new);
         entity.setUsername(userReq.username);
         var saved = repository.save(entity);
         return mapper.toResponse(saved);
@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserRes updateUserPostsAmount(Long id, UserPostsAmountReq userReq) {
-        var entity = repository.findById(id).orElseThrow(RuntimeException::new);
+        var entity = repository.findById(id).orElseThrow(UserNotFoundException::new);
         entity.setAmountOfPosts(entity.amountOfPosts + userReq.amount);
         var saved = repository.save(entity);
         return mapper.toResponse(saved);
