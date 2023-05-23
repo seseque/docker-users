@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: kmp_users
       POSTGRES_DB: kmp_users
 
-  app_users:
+  users:
     image: epamsesegvanchikova/users:v1
     ports:
       - "8080:8080"
@@ -30,15 +30,15 @@ services:
       POSTGRES_PASSWORD: kmp_posts
       POSTGRES_DB: kmp_posts
 
-  app_posts:
+  posts:
     image: epamsesegvanchikova/posts:v1
     ports:
-      - "8090:8090"
+      - "8090:8080"
     environment:
       DATABASE_URL: jdbc:postgresql://db_posts:5432/kmp_posts
       POSTGRES_USER: kmp_posts
       POSTGRES_PASSWORD: kmp_posts
-      USERS_ORIGIN: http://app_users:8080
+      USERS_ORIGIN: http://users:8080
     depends_on:
       db_posts:
         condition: service_started
